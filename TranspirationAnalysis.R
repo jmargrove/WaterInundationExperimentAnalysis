@@ -18,13 +18,14 @@ data <- read.table("Photosynthesis.txt",
                    header = TRUE);
 str(data);
 
+with(data[data$treat == 0,], tapply(E, sp, mean))
 
 ##### exploration 
-ggplot(data, aes(x = treat, y = A)) + geom_point() + stat_smooth()
+ggplot(data, aes(x = treat, y = E)) + geom_point() + stat_smooth()
 
 ##### model addressing the hyporthesis, do dipterocarps generally show a decline
 ## in carbon aquisition with respect to water inundation. 
-transp_model <- lmer(A ~ dia + treat + 
+transp_model <- lmer(E ~ dia + treat + 
                       (1 | block) + 
                       (1 | sp / mother) + 
                       (1 | date), 
@@ -57,8 +58,7 @@ ranNorm("block", slope = 1, model = transp_model2)
 
 
 ################################################################################
-
-##### predicting the data values 
+##### predicting the data values for the treatment  
 
 transp_preds <- expand.grid(dia = mean(data$dia, na.rm = TRUE), 
                            treat = seq(from = 0, to = 21, length = 100))
@@ -74,3 +74,20 @@ ggplot(transp_preds, aes(x = treat, y = E)) + geom_line()
 
 head(transp_preds)
 tail(transp_preds)
+
+##### predicting values for diameter 
+transp_preds_dia <- expand.grid(dia = seq(from = min(data$dia, na.rm = TRUE), 
+                                      to = max(data$dia, na.rm = TRUE), 
+                                      length = 100),
+                            treat = 9)
+
+transp_preds_dia$E <- predict(transp_model2, 
+                           newdata = transp_preds_dia, 
+                           type = "response",
+                           re.form = NA)
+#### graphing the diameter
+ggplot(transp_preds_dia, aes(x = dia, y = E)) + geom_line()
+### those with higher diameters also have higher transperation
+
+
+

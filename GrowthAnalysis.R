@@ -58,12 +58,17 @@ ggplot(growth_preds, aes(x = treat, y = rgr)) +
 min(growth_preds$rgr)
 max(growth_preds$rgr)
 
-
+################################################################################
 ##### Growth preds for diameter 
-grw_pred_dia <- expand.grid(dia = seq(from = min(dt$dia, na.rm = T),
+grw_preds_dia <- expand.grid(dia = seq(from = min(dt$dia, na.rm = T),
                                       to = max(dt$dia, na.rm = T),
                                       length = 100),
                             treat = 9)
+grw_preds_dia$rgr <- predict(growth_model1, 
+                             newdata = grw_preds_dia,
+                             type = "response",
+                             re.form = NA)
 
+ggplot(grw_preds_dia, aes(x = dia, y = rgr)) + geom_line()
 
 
