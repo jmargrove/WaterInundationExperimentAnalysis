@@ -11,3 +11,17 @@ To run the analysis your self:
 
 
 ![alt text](https://s3-eu-west-1.amazonaws.com/james.margrove/StatisticalAnalysisREADMEs/WaterInundationExperimentAnalysis/panorama+of+nursary.jpg)
+
+### Methods outline 
+#### Site 
+Experment in Sabah, Malaysian Borneo. Shade house was 375 m^2 divided in to 5 blocks (5 x 15 m).
+#### Experimental Design 
+Randomised block.
+Each block has 160 seedlings
+Seedlings 
+- 10 speceis 
+- 160 each (So 80 of each species)
+- 92 mothers (not evenly distributed across species)
+#### Treatment 
+water inundation on a 21 day cycle 
+
