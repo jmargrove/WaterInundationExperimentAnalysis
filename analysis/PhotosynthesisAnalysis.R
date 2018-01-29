@@ -14,7 +14,7 @@ library("lmerTest")
 source("./functions/ranNorm.R")
 
 ################################################################################
-data <- read.table("Photosynthesis.txt",
+data <- read.table("./data/Photosynthesis.txt",
                    header = TRUE);
 str(data);
 

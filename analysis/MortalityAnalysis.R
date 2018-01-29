@@ -13,7 +13,7 @@ source("./functions/ranNorm.R")
 ##### remove clutter 
 rm(list=ls())
 
-survival_data <- read.table("Experiment, mort, leafAB, dden, wden,sla.txt", header = TRUE);
+survival_data <- read.table("./data/Experiment, mort, leafAB, dden, wden,sla.txt", header = TRUE);
 str(survival_data)
 
 ##### data exploration with ggplot. 
