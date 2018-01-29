@@ -30,25 +30,30 @@ dt[1, ]# per 30 day month ;)
 
 ##### Modelling the data 
 
-model1 <- lmer(Drgr ~
+growth_model1 <- lmer(Drgr ~
                  dia +
                  treat +
                  (1 | cenus) +
                  (1 | sp / mother) +
                  (1 | block),
                data = dt)
-summary(model1)
+summary(growth_model1)
 
 ##### predicting the growth rates across treatments 
 
-preds <- expand.grid(dia = mean(dt$dia, na.rm = TRUE),
+growth_preds <- expand.grid(dia = mean(dt$dia, na.rm = TRUE),
                      treat = seq(from = 0, to = 21, length = 100))
-preds$rgr <- predict(model1,
+growth_preds$rgr <- predict(model1,
                      newdata = preds,
                      type = "response",
                      re.form = NA)
 
-conf <- predict(model1, newdata = preds, se.fit = TRUE, re.form = NA)
+conf <- predict(model1, 
+                preds, 
+                type = "response", 
+                se.fit = TRUE, 
+                interval = "confidence",
+                re.form = NA)
 str(conf)
 
 head(preds)
