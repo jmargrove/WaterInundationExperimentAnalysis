@@ -38,12 +38,14 @@ growth_model1 <- lmer(Drgr ~
                  (1 | sp / mother) +
                  (1 | block),
                data = dt)
+
 summary(growth_model1)
 
 ##### predicting the growth rates across treatments 
 
 growth_preds <- expand.grid(dia = mean(dt$dia, na.rm = TRUE),
                      treat = seq(from = 0, to = 21, length = 100))
+
 growth_preds$rgr <- predict(growth_model1,
                      newdata = growth_preds,
                      type = "response",
@@ -57,7 +59,11 @@ min(growth_preds$rgr)
 max(growth_preds$rgr)
 
 
+##### Growth preds for diameter 
+grw_pred_dia <- expand.grid(dia = seq(from = min(dt$dia, na.rm = T),
+                                      to = max(dt$dia, na.rm = T),
+                                      length = 100),
+                            treat = 9)
 
 
-log(5) - log(2.5)/ time 
 
