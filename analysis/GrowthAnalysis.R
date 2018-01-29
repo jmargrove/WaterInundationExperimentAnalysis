@@ -11,7 +11,7 @@ require(lme4)
 require(foreach)
 library("lmerTest")
 ################################################################################
-data <- read.table("Data_dia,height,leafnumber ofor biomass calculation.txt",
+data <- read.table("./data/Data_dia,height,leafnumber ofor biomass calculation.txt",
                    header = TRUE);
 str(data);
 
