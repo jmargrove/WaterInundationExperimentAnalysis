@@ -9,12 +9,18 @@ require(merTools)
 source("./functions/newbinplot.R"); require(arm)
 source("./functions/ranNorm.R")
 
+
+##### remove clutter 
+rm(list=ls())
+
 survival_data <- read.table("Experiment, mort, leafAB, dden, wden,sla.txt", header = TRUE);
 str(survival_data)
 
 ##### data exploration with ggplot. 
 ggplot(survival_data, aes(x=treat, y=surv)) + geom_point() + stat_smooth()
 
+
+##### first model if treatmnean and diameter had an addative effect 
 survival_model1 <- glmer(surv ~ treat + dia + 
                            (1|sp/mother) + 
                            (1|block), 
@@ -65,3 +71,17 @@ ggplot(surv_preds, aes(x=treat, y=p)) + geom_line()
 ##### extremes of survival curve...
 min(surv_preds$p)
 max(surv_preds$p)
+
+##### seedling survival analysis 
+surv_preds_dia <- expand.grid(dia = seq(from = min(survival_data$dia, na.rm = TRUE), 
+                                        to = max(survival_data$dia, na.rm = TRUE), 
+                                        length = 100), 
+                              treat = 9)
+
+surv_preds_dia$p <- predict(survival_model1, 
+                            newdata = surv_preds_dia, 
+                            type = "response",
+                            re.form = NA)
+
+##### plotting the data 
+ggplot(surv_preds_dia, aes(x = dia, y = p)) + geom_line()
