@@ -38,6 +38,9 @@ preds <- expand.grid(dia = mean(data$dia), treat = seq(from = 0, to = 21, length
 preds$p = predict(model1, type = "response", newdata = preds, re.form = NA)
 head(preds)
 
+##### Confidence intervals 
+preds$CI <- predict(model1, newdata = preds, re.form = NA, se.fit = TRUE)$se.fit
+
 ggplot(preds, aes(x=treat, y=p)) + geom_line() 
 
 ##### extremes of survival curve....
