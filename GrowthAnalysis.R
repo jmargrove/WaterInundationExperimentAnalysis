@@ -2,6 +2,9 @@
 ##### author: james margrove 
 ##### date: 29.01.2017
 
+##### remove clutter 
+rm(list=ls())
+
 ##### imported packaged 
 require(ggplot2)
 require(lme4)
@@ -26,10 +29,8 @@ Drgr <- as.vector(rgr_dia_mat);
 ##### converting to a data frame 
 dt <- data[data$cenus != 4, ];
 dt$Drgr <- Drgr * 30;
-dt[1, ]# per 30 day month ;)
 
 ##### Modelling the data 
-
 growth_model1 <- lmer(Drgr ~
                  dia +
                  treat +
@@ -43,25 +44,20 @@ summary(growth_model1)
 
 growth_preds <- expand.grid(dia = mean(dt$dia, na.rm = TRUE),
                      treat = seq(from = 0, to = 21, length = 100))
-growth_preds$rgr <- predict(model1,
-                     newdata = preds,
+growth_preds$rgr <- predict(growth_model1,
+                     newdata = growth_preds,
                      type = "response",
                      re.form = NA)
 
-conf <- predict(model1, 
-                preds, 
-                type = "response", 
-                se.fit = TRUE, 
-                interval = "confidence",
-                re.form = NA)
-str(conf)
-
-head(preds)
-ggplot(preds, aes(x = treat, y = rgr)) + 
-  geom_line() + 
-  geom_ribbon(aes(ymin=rgr-conf, ymax = rgr + conf))
-  
+ggplot(growth_preds, aes(x = treat, y = rgr)) + 
+  geom_line() 
 
 ##### min growth rate, and max growth rate 
-min(preds$rgr)
-max(preds$rgr)
+min(growth_preds$rgr)
+max(growth_preds$rgr)
+
+
+
+
+log(5) - log(2.5)/ time 
+

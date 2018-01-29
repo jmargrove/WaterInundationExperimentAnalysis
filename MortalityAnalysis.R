@@ -5,6 +5,7 @@
 ##### imported packaged 
 require(ggplot2)
 require(lme4)
+require(merTools)
 source("./functions/newbinplot.R"); require(arm)
 source("./functions/ranNorm.R")
 
@@ -38,17 +39,27 @@ ranNorm("sp", slope = 1, model = survival_model1)
 ranNorm("block", slope = 1, model = surivival_model1)
 
 ##### Graphing the analysis
-surv_preds <- expand.grid(dia = mean(survival_data$dia), treat = seq(from = 0, to = 21, length = 100))
-surv_preds$p = predict(survival_model1, 
+surv_preds <- expand.grid(dia = mean(survival_data$dia),
+                          treat = seq(from = 0, to = 21, length = 100),
+                          mother = 0,
+                          sp = 0,
+                          block = 0)
+
+##### predicting the values 
+surv_preds$p <- predict(survival_model1, 
                        newdata = surv_preds,
-                       type = "response", re.form = NA)
+                       type = "response", 
+                       re.form = NA)
+
+predict(survival_model1, 
+        newdata = surv_preds,
+        type = "response", 
+        re.form = NA)
+
+summary(survival_model1)
+
 head(preds)
 ##### Confidence intervals 
-surv_preds$CI <- predict(survival_model1, 
-                         newdata = surv_preds, 
-                         re.form = NA, 
-                         se.fit = TRUE)$se.fit
-
 ggplot(surv_preds, aes(x=treat, y=p)) + geom_line() 
 ################################################################################
 ##### extremes of survival curve...
