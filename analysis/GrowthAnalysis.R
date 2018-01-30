@@ -111,5 +111,8 @@ slope_coef <- data.frame(sp = levels(dt$sp),
 # Remove row-names.
 rownames(slope_coef) <- c()
 # Print slopes to console.
-slope_coef[order(-slope_coef$rgr), ]
+slope_coef <- slope_coef[order(-slope_coef$rgr), ]
+# write the coef results 
+write.table(slope_coef, file = "./rgrSlopeCoef.txt")
+
 

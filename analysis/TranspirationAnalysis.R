@@ -71,7 +71,6 @@ transp_preds$E <-predict(transp_model2,
 
 ##### graphing the data with ggplot2 
 ggplot(transp_preds, aes(x = treat, y = E)) + geom_line()
-
 head(transp_preds)
 tail(transp_preds)
 
@@ -89,5 +88,61 @@ transp_preds_dia$E <- predict(transp_model2,
 ggplot(transp_preds_dia, aes(x = dia, y = E)) + geom_line()
 ### those with higher diameters also have higher transperation
 
+################################################################################
+# Model the interaction between species and treatment. 
+transp_model3 <- lmer(E ~ (log(treat+1) * sp + dia) + 
+                       (1 | block) + 
+                       (1 | mother) + 
+                       (1 | date), 
+                     data = data)
+summary(transp_model3)
+car::Anova(transp_model3)
+diff(AIC(photo_model2, transp_model3)[,2])
 
+# Some deviations from normallity but otherwise OK (for ecology data).
+plot(transp_model3)
+
+# Random effects reasonably normally distributed.
+ranNorm("mother", slope = 1, model = transp_model3)
+ranNorm("block", slope = 1, model = transp_model3)
+ranNorm("date", slope = 1, model = transp_model3)
+# summerise the model.
+summary(transp_model3)
+# Anova test the interaction.
+car::Anova(transp_model3)
+
+# extract coef from model.
+coef <- fixef(transp_model3)
+
+# Calculate fixed effect slopes for the species : treatment frequency.
+slope_coef <- data.frame(sp = levels(data$sp), 
+                         rgr = c(coef[11], coef[11] + coef[13:length(coef)]))
+# Remove row-names.
+rownames(slope_coef) <- c()
+# Print slopes to console.
+slope_coef <- slope_coef[order(-slope_coef$rgr), ]
+# write the coef results 
+write.table(slope_coef, file = "./ESlopeCoef.txt")
+
+# as S bec is the had the lowest difference, what is different to it 
+data$sp <- relevel(data$sp, ref = "sbec")
+# Same model, different primary level 
+transp_model3 <- lmer(E ~ (log(treat + 1) * sp + dia) + 
+                        (1 | block) + 
+                        (1 | mother) + 
+                        (1 | date), 
+                      data = data)
+summary(transp_model3)
+
+
+# 
+data$sp <- relevel(data$sp, ref = "dry")
+transp_model4 <- lmer(E ~ (log(treat + 1) + sp + dia) + 
+                        (1 | block) + 
+                        (1 | mother) + 
+                        (1 | date), 
+                      data = data)
+##
+summary(transp_model4)
+car::Anova(transp_model4)
 
