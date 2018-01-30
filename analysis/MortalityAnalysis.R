@@ -6,6 +6,8 @@
 require(ggplot2)
 require(lme4)
 require(merTools)
+require(lmerTest)
+source(system.file("utils", "allFit.R", package = "lme4"))
 source("./functions/newbinplot.R"); require(arm)
 source("./functions/ranNorm.R")
 
@@ -85,3 +87,70 @@ surv_preds_dia$p <- predict(survival_model1,
 
 ##### plotting the data 
 ggplot(surv_preds_dia, aes(x = dia, y = p)) + geom_line()
+
+
+################################################################################
+################################################################################
+################################################################################
+##### species interaction - survival analysis... 
+##### are the species different 
+##### date: 30 01 2017
+
+# first model 
+surv_model2 <- glmer(surv ~ sp + treat + dia + sp:treat + 
+                       (1 | mother) + (1| block), 
+                     data = survival_data, 
+                     family = "binomial")
+
+# Model does not converge.
+surv_model3 <- glmer(surv ~ sp + treat + dia + sp:treat + 
+                       (1 | mother) + (1 | block), 
+                     data = survival_data, 
+                     family = "binomial", 
+                     control=glmerControl(optimizer="nlminbw"))
+
+# optimizer nlminbw allows convergence.
+summary(surv_model3)
+
+# residuals & fitted values.
+surv_model1_residuals <- resid(surv_model3, type =  "pearson");
+surv_model1_fitted <- fitted(surv_model3)
+
+# Some deviations from normallity but otherwise OK (for ecology data).
+newbinplot(surv_model1_residuals, surv_model1_fitted);
+
+# Random effects reasonably normally distributed
+ranNorm("mother", slope = 1, model = surv_model3)
+ranNorm("block", slope = 1, model = surv_model3)
+
+################################################################################
+#Graphing the data 
+preds_sp_inter_surv <- expand.grid(sp = levels(survival_data$sp), 
+                                   treat = seq(from = 0, 
+                                               to = 21, 
+                                               length = 100),
+                                   dia = mean(survival_data$dia, na.rm = TRUE))
+
+preds_sp_inter_surv$p <- predict(surv_model3, 
+                                 newdata = preds_sp_inter_surv,
+                                 type = "response",
+                                 re.form = NA)
+
+ggplot(preds_sp_inter_surv, aes(x = treat, y = p, color = sp)) + 
+  geom_line()
+  
+coef <- fixef(surv_model3)
+
+slope_coef <- data.frame(sp = levels(survival_data$sp), 
+                         p = c(coef[11], coef[11] + coef[13:length(coef)]))
+
+rownames(slope_coef) <- c()
+slope_coef[order(-slope_coef$p), ]
+
+# Testing the model with a type II anova 
+car::Anova(surv_model3)
+# Summarise the model 
+summary(surv_model3)
+# Calculate the differance in AIC
+diff(AIC(surv_model3, survival_model1)[,2])
+

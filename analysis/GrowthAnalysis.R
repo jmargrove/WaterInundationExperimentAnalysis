@@ -10,6 +10,7 @@ require(ggplot2)
 require(lme4)
 require(foreach)
 library("lmerTest")
+source("./functions/ranNorm.R")
 ################################################################################
 data <- read.table("./data/Data_dia,height,leafnumber ofor biomass calculation.txt",
                    header = TRUE);
@@ -41,6 +42,14 @@ growth_model1 <- lmer(Drgr ~
 
 summary(growth_model1)
 
+# Some deviations from normallity but otherwise OK (for ecology data).
+plot(growth_model1)
+
+# Random effects reasonably normally distributed
+ranNorm("mother", slope = 1, model = growth_model1)
+ranNorm("block", slope = 1, model = growth_model1)
+ranNorm("cenus", slope = 1, model = growth_model1)
+
 ##### predicting the growth rates across treatments 
 
 growth_preds <- expand.grid(dia = mean(dt$dia, na.rm = TRUE),
@@ -71,4 +80,36 @@ grw_preds_dia$rgr <- predict(growth_model1,
 
 ggplot(grw_preds_dia, aes(x = dia, y = rgr)) + geom_line()
 
+################################################################################
+# interaction between species and water inundation.
+growth_model2 <- lmer(Drgr ~ sp * treat + dia + 
+                        (1 | cenus) + 
+                        (1 | mother) + 
+                        (1 | block), 
+                      data = dt)
+
+# Some deviations from normallity but otherwise OK (for ecology data).
+plot(growth_model2)
+
+# Random effects reasonably normally distributed.
+ranNorm("mother", slope = 1, model = growth_model2)
+ranNorm("block", slope = 1, model = growth_model2)
+ranNorm("cenus", slope = 1, model = growth_model2)
+# summerise the model.
+summary(growth_model2)
+# Anova test the interaction.
+car::Anova(growth_model2)
+# Calculate the differenece in AIC. 
+diff(AIC(growth_model1, growth_model2)[,2])
+
+# extract coef from model.
+coef <- fixef(growth_model2)
+
+# Calculate fixed effect slopes for the species : treatment frequency.
+slope_coef <- data.frame(sp = levels(dt$sp), 
+                         rgr = c(coef[11], coef[11] + coef[13:length(coef)]))
+# Remove row-names.
+rownames(slope_coef) <- c()
+# Print slopes to console.
+slope_coef[order(-slope_coef$rgr), ]
 
