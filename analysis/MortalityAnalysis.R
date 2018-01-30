@@ -2,6 +2,10 @@
 ##### author: james margrove 
 ##### date: 26.01.2017
 ################################################################################
+
+##### remove clutter 
+rm(list=ls())
+
 ##### imported packaged 
 require(ggplot2)
 require(lme4)
@@ -10,10 +14,6 @@ require(lmerTest)
 source(system.file("utils", "allFit.R", package = "lme4"))
 source("./functions/newbinplot.R"); require(arm)
 source("./functions/ranNorm.R")
-
-
-##### remove clutter 
-rm(list=ls())
 
 survival_data <- read.table("./data/Experiment, mort, leafAB, dden, wden,sla.txt", header = TRUE);
 str(survival_data)
@@ -145,7 +145,7 @@ slope_coef <- data.frame(sp = levels(survival_data$sp),
                          p = c(coef[11], coef[11] + coef[13:length(coef)]))
 
 rownames(slope_coef) <- c()
-slope_coef[order(-slope_coef$p), ]
+slope_coef <- slope_coef[order(-slope_coef$p), ]
 
 # Testing the model with a type II anova 
 car::Anova(surv_model3)
@@ -153,4 +153,6 @@ car::Anova(surv_model3)
 summary(surv_model3)
 # Calculate the differance in AIC
 diff(AIC(surv_model3, survival_model1)[,2])
+# write the coef results 
+write.table(slope_coef, file = "./psSlopeCoef.txt")
 
