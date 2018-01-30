@@ -96,37 +96,35 @@ ggplot(surv_preds_dia, aes(x = dia, y = p)) + geom_line()
 ##### are the species different 
 ##### date: 30 01 2017
 
-### first model 
+# first model 
 surv_model2 <- glmer(surv ~ sp + treat + dia + sp:treat + 
                        (1 | mother) + (1| block), 
                      data = survival_data, 
                      family = "binomial")
 
-## problems with converging 
+# Model does not converge.
 surv_model3 <- glmer(surv ~ sp + treat + dia + sp:treat + 
                        (1 | mother) + (1 | block), 
                      data = survival_data, 
                      family = "binomial", 
                      control=glmerControl(optimizer="nlminbw"))
 
-### optimizer nlminbw works fine now.
+# optimizer nlminbw allows convergence.
 summary(surv_model3)
 
-##### residuals & fitted values 
+# residuals & fitted values.
 surv_model1_residuals <- resid(surv_model3, type =  "pearson");
 surv_model1_fitted <- fitted(surv_model3)
 
-# Some deviations from normallity but otherwise OK 
+# Some deviations from normallity but otherwise OK (for ecology data).
 newbinplot(surv_model1_residuals, surv_model1_fitted);
 
-# Random effects reasonabbly normally distributed
+# Random effects reasonably normally distributed
 ranNorm("mother", slope = 1, model = surv_model3)
 ranNorm("block", slope = 1, model = surv_model3)
 
-### as per ususal, not to bad 
-
-##### Graphing the data 
-
+################################################################################
+#Graphing the data 
 preds_sp_inter_surv <- expand.grid(sp = levels(survival_data$sp), 
                                    treat = seq(from = 0, 
                                                to = 21, 
@@ -144,11 +142,15 @@ ggplot(preds_sp_inter_surv, aes(x = treat, y = p, color = sp)) +
 coef <- fixef(surv_model3)
 
 slope_coef <- data.frame(sp = levels(survival_data$sp), 
-           p = c(coef[11], coef[11] + coef[13:length(coef)]))
+                         p = c(coef[11], coef[11] + coef[13:length(coef)]))
+
 rownames(slope_coef) <- c()
+slope_coef[order(-slope_coef$p), ]
 
-slope_coef[order(-slope_coef$p),]
+# Testing the model with a type II anova 
+car::Anova(surv_model3)
+# Summarise the model 
+summary(surv_model3)
+# Calculate the differance in AIC
+diff(AIC(surv_model3, survival_model1)[,2])
 
-
-
-?order
