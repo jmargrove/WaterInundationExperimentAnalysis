@@ -145,7 +145,7 @@ slope_coef <- data.frame(sp = levels(survival_data$sp),
                          p = c(coef[11], coef[11] + coef[13:length(coef)]))
 
 rownames(slope_coef) <- c()
-slope_coef <- slope_coef[order(-slope_coef$p), ]
+#slope_coef <- slope_coef[order(-slope_coef$p), ]
 
 # Testing the model with a type II anova 
 car::Anova(surv_model3)

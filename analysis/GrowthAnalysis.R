@@ -2,6 +2,14 @@
 ##### author: james margrove 
 ##### date: 29.01.2017
 
+#install.packages("ggplot2", dep = TRUE)
+#install.packages("lme4", dep = TRUE)
+#install.packages("foreach", dep = TRUE)
+#install.packages("lmerTest", dep = TRUE)
+#install.packages("car", dep = TRUE)
+
+
+
 ##### remove clutter 
 rm(list=ls())
 
@@ -110,9 +118,8 @@ slope_coef <- data.frame(sp = levels(dt$sp),
                          rgr = c(coef[11], coef[11] + coef[13:length(coef)]))
 # Remove row-names.
 rownames(slope_coef) <- c()
-# Print slopes to console.
-slope_coef <- slope_coef[order(-slope_coef$rgr), ]
+# Print dataframe ordered by slopes to console.
+slope_coef[order(-slope_coef$rgr), ]
 # write the coef results 
 write.table(slope_coef, file = "./rgrSlopeCoef.txt")
-
 
