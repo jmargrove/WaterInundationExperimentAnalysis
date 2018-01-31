@@ -123,7 +123,7 @@ rownames(slope_coef) <- c()
 write.table(slope_coef, file = "./ESlopeCoef.txt")
 
 # as S bec is the had the lowest difference, what is different to it 
-data$sp <- relevel(data$sp, ref = "sbec")
+#data$sp <- relevel(data$sp, ref = "sbec")
 # Same model, different primary level 
 transp_model3 <- lmer(E ~ (log(treat + 1) * sp + dia) + 
                         (1 | block) + 
@@ -133,14 +133,25 @@ transp_model3 <- lmer(E ~ (log(treat + 1) * sp + dia) +
 summary(transp_model3)
 
 
-# 
-data$sp <- relevel(data$sp, ref = "dry")
+################################################################################
+# Modelling the addative effect of species during the flooding episode  
 transp_model4 <- lmer(E ~ (log(treat + 1) + sp + dia) + 
                         (1 | block) + 
                         (1 | mother) + 
                         (1 | date), 
                       data = data)
-##
+#
 summary(transp_model4)
 car::Anova(transp_model4)
+
+# extract coef from model.
+coef <- fixef(transp_model4)
+
+# Calculate fixed effect slopes for the species : treatment frequency.
+slope_coef <- data.frame(sp = levels(data$sp), 
+                         rgr = c(coef[1], coef[1] + coef[3:(length(coef)-1)]))
+# Remove row-names.
+rownames(slope_coef) <- c()
+# write the coef results 
+write.table(slope_coef, file = "./ESpIntCoef.txt")
 

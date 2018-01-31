@@ -30,3 +30,21 @@ summary(lm1)
 
 ### species that had their photosynthesis, and transperation reduced the most,
 # where those that had theree
+
+data$ASpInt <-read.table("./ASpIntCoef.txt", header = TRUE)[, 2]
+data$ESpInt<- read.table("./ESpIntCoef.txt", header = TRUE)[, 2]
+
+plot(data[,3:5])
+# Photosynthesis linked to changes in growth or survival
+lm2 <- lm(ps ~ ASpInt, data)
+summary(lm2)
+with(data, cor.test(ps, ASpInt))
+lm3 <- lm(rgr ~ ASpInt, data)
+summary(lm3)
+with(data, cor.test(rgr, ASpInt))
+?cor
+# Transpiration linked to changes in growth or survival 
+lm4 <- lm(ps ~ ESpInt, data)
+summary(lm4)
+lm5 <- lm(rgr ~ ESpInt, data)
+summary(lm5)

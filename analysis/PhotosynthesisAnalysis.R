@@ -18,7 +18,6 @@ data <- read.table("./data/Photosynthesis.txt",
                    header = TRUE);
 str(data);
 
-
 ##### exploration 
 ggplot(data, aes(x = treat, y = A)) + geom_point() + stat_smooth()
 
@@ -109,11 +108,26 @@ rownames(slope_coef) <- c()
 # write the coef results 
 write.table(slope_coef, file = "./ASlopeCoef.txt")
 
-photo_model4 <- lmer(A ~ (log(treat+1) + sp + dia) + 
-                       (1 | block) + 
-                       (1 | mother) + 
-                       (1 | date), 
-                     data = data)
 
-summary(photo_model4)
-car::Anova(photo_model4)
+################################################################################
+# Modelling the addative effect of species during the flooding episode  
+transp_model4 <- lmer(A ~ log(treat + 1) + sp + dia + 
+                        (1 | block) + 
+                        (1 | mother) + 
+                        (1 | date), 
+                      data = data)
+# Summerize the data 
+summary(transp_model4)
+car::Anova(transp_model4)
+
+# Extract coef from model.
+coef <- fixef(transp_model4)
+
+# Calculate fixed effect slopes for the species : treatment frequency.
+slope_coef <- data.frame(sp = levels(data$sp), 
+                         A = c(coef[1], coef[1] + coef[3:(length(coef)-1)]))
+# Remove row-names.
+rownames(slope_coef) <- c()
+# Write the coef results 
+write.table(slope_coef, file = "./ASpIntCoef.txt")
+
