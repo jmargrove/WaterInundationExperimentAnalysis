@@ -29,3 +29,6 @@ newbinplot <-   function (x, y, nclass = NULL, xlab = "Expected Values", ylab = 
   #qqnorm(aa$ybar, main = ""); qqline(aa$ybar) # qqnorm 
   car::qqPlot(aa$ybar, col = "black", pch = 19, cex = .75, grid = FALSE, ylab = "Sample Quantiles", xlab = "Theoretical Quantiles")
 }
+
+?binned.resids
+

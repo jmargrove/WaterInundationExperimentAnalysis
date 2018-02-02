@@ -14,6 +14,8 @@ require(lme4)
 require(doSNOW)
 require(MuMIn)
 source("./functions/newbinplot.R"); require(arm)
+source("./functions/ranNorm.R"); require(arm)
+
 source(system.file("utils", "allFit.R", package = "lme4"))
 
 ##### Import data, mortality and trait data
@@ -67,25 +69,72 @@ scaled_data$dden <- scaler(data$dden)
 scaled_data$rTs <- scaler(data$rTs)
 scaled_data$treat <- scaler(data$treat)
 
-
 # Run model with scaled data
 model2 <- glmer(surv ~ diameter + 
-                 treat*si*lTb + treat*si*rTs + treat*si*dden + 
-                 treat*lTb*rTs + treat*lTb*dden + 
-                 treat*rTs*dden + 
                  (1|block) + (1|sp/mother), 
                data = scaled_data, 
                family = "binomial", 
+               na.action = 'na.fail',
                control = glmerControl(optimizer = "nlminbw"))
 
 # traditional backwards model selection 
 # removing variables by order of least significanse
-model3 <- update(model2, . ~ . -treat:si:dden)
+model3 <- update(model2, . ~ . + treat*si*lTb + treat*si*rTs)
+dredge(model3)
+
 model4 <- update(model3, . ~ . -treat:si:lTb)
 model5 <- update(model3, . ~ . -si:lTb)
 
-summary(model4)
-?update
+model2 <- glmer(surv ~ diameter + 
+                  treat*si*lTb + treat*si*rTs + treat*si*dden + 
+                  treat*lTb*rTs + treat*lTb*dden + 
+                  treat*rTs*dden + 
+                  (1|block) + (1|sp/mother), 
+                data = scaled_data, 
+                family = "binomial", 
+                na.action = "na.pass",
+                control = glmerControl(optimizer = "nlminbw"))
+
+## the model matix gets rank defincient and drops 2 perameters to be estimated.
+## this needs to be looked at in more detail. Find out what they are, and re do
+## analysis. 
+
+## has dropped two coef 
+dredged_model <- dredge(model2, rank = "AIC", trace = TRUE)
+#save(dredged_model, file = "surv_trait_model.R")
+load("surv_trait_model.R")
+head(dredged_model, 5)
+# the mode with the lowest used degrees of freedom, for the top models within 
+# 2 AIC points of the best model has a two three way interactions with 
+# treat:dden:rts and treat:lTb:si 
+model <- glmer(surv ~ diameter + 
+                 treat*si*lTb + 
+                 treat*rTs*dden + 
+                 (1|block) + (1|sp/mother), 
+               data = scaled_data, 
+               family = "binomial", 
+               na.action = "na.pass",
+               control = glmerControl(optimizer = "nlminbw"))
+
+summary(model)
 
 
-AIC(model)
+################################################################################
+# Model evaluation 
+
+# residuals & fitted values.
+model_residuals <- resid(model, type =  "pearson");
+model_fitted <- fitted(model)
+
+# Some deviations from normallity but otherwise OK (for ecology data).
+par(mfrow=c(1,3))
+newbinplot(y = model_residuals, x = model_fitted);
+
+# Random effects reasonably normally distributed
+ranNorm("sp", slope = 1, model = model)
+# species does nothing...
+ranNorm("mother:sp", slope = 1, model = model)
+# mother:sp fine
+ranNorm("block", slope = 1, model = model)
+# fine 
+
