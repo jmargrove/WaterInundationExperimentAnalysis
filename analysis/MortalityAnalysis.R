@@ -23,7 +23,7 @@ ggplot(survival_data, aes(x=treat, y=surv)) + geom_point() + stat_smooth()
 
 
 ##### first model if treatmnean and diameter had an addative effect 
-survival_model1 <- glmer(surv ~ treat + dia + 
+survival_model1 <- glmer(surv ~ treat * dia + 
                            (1|sp/mother) + 
                            (1|block), 
                          data = survival_data, 
@@ -39,12 +39,50 @@ surv_model1_residuals <- resid(survival_model1, type =  "pearson");
 surv_model1_fitted <- fitted(survival_model1)
 
 # Some deviations from normallity but otherwise OK 
-newbinplot(surv_model1_residuals, surv_model1_fitted);
+eval_data <- data.frame(res = surv_model1_residuals, 
+                        fit = surv_model1_fitted)
+
+eval_data$cd <- with(eval_data, cut(fit, 100))
+
+rc <- with(eval_data, tapply(res, cd, mean))
+fc <- with(eval_data, tapply(fit, cd, mean))
+par(mfrow=c(1,1))
+plot(y = rc, fc)
+car::qqPlot(rc, col = "black", pch = 19, cex = .75, grid = FALSE, ylab = "Sample Quantiles", xlab = "Theoretical Quantiles")
 
 # Random effects reasonabbly normally distributed
 ranNorm("mother:sp", slope = 1, model = survival_model1)
 ranNorm("sp", slope = 1, model = survival_model1)
 ranNorm("block", slope = 1, model = surivival_model1)
+
+
+
+
+
+
+
+
+surv_model2 <- update(survival_model1, . ~ . - treat + log(treat+1))
+surv_model2 <- update(survival_model1, . ~ . log(treat + 1)+ log(treat+1))
+
+# Model did not converge 
+surv_model3 <- update(surv_model2, . ~ . , 
+                      control = glmerControl(optimizer = "nlminbw"))
+
+
+##### residuals & fitted values 
+surv_model3_residuals <- resid(surv_model3, type =  "pearson");
+surv_model3_fitted <- fitted(surv_model3)
+
+# Some deviations from normallity but otherwise OK 
+par(mfrow=c(1,3))
+newbinplot(surv_model3_residuals, surv_model3_fitted);
+args(newbinplot)
+summary(surv_model3)
+
+# Residuals still have patterns, although the 
+
+
 
 ##### Graphing the analysis
 surv_preds <- expand.grid(dia = mean(survival_data$dia),
@@ -117,11 +155,15 @@ surv_model1_residuals <- resid(surv_model3, type =  "pearson");
 surv_model1_fitted <- fitted(surv_model3)
 
 # Some deviations from normallity but otherwise OK (for ecology data).
-newbinplot(surv_model1_residuals, surv_model1_fitted);
+# but there are strong cyclical patterns in the residuals... 
+par(mfrow=c(1,3))
+newbinplot(y = surv_model1_residuals, x = surv_model1_fitted);
 
 # Random effects reasonably normally distributed
 ranNorm("mother", slope = 1, model = surv_model3)
 ranNorm("block", slope = 1, model = surv_model3)
+
+
 
 ################################################################################
 #Graphing the data 
